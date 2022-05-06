@@ -9,5 +9,4 @@ libwebp
 .DS_Store
 **/ndkHelperBin
 **/.cxx
-display-p3/third_party
-
+/app/src/main/cpp/thirdparty

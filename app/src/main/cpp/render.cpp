@@ -77,10 +77,10 @@ void draw_walls() {
 
     set_color(0.5f, 0.0f, 0.0f, 1.0f);
 
-
     modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.0f, -1.0f, 1.0f));
     modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.2f, 1.2f, 1.2f));
     set_matrix(modelMatrix);
 
     wall_draw();
@@ -155,7 +155,7 @@ void draw_intersection(float scale, bool cube) {
 void draw_hole(float scale, float thickness, bool cube = false) {
     draw_intersection(scale, cube);
 
-    set_color(0.1f, 0.1f, 0.4f, 1.0f);
+    set_color(0.0f, 0.0f, 0.0f, 0.0f);
     draw_intersection(scale-thickness, cube);
 }
 
@@ -167,9 +167,8 @@ void render_draw_frame(float move) {
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
-    glClearColor(0.1f, 0.1f, 0.4f, 1.0f);
-    glClearStencil(0);
-    glEnable(GL_BLEND);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glDisable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Just fill the screen with a color.
@@ -184,6 +183,7 @@ void render_draw_frame(float move) {
     set_color(1.0f, 1.0f, 1.0f, 1.0f);
     draw_hole(0.3f, 0.05f, cube);
 
+    glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);

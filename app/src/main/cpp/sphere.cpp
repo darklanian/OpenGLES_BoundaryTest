@@ -30,9 +30,7 @@ void load_object(AAssetManager* am, const char* filename) {
         } else if (strncmp(line.c_str(), "v", 1) == 0) {
             glm::vec3 vertex;
             sscanf(line.c_str(), "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
-            LOGI("vertex[%ld]=%f,%f,%f", vertices.size(), vertex.x, vertex.y, vertex.z);
             vertices.push_back(vertex);
-
         } else if (strncmp(line.c_str(), "f", 1) == 0) {
             unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
             sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
@@ -48,7 +46,6 @@ void load_object(AAssetManager* am, const char* filename) {
         }
     }
     AAsset_close(asset);
-    LOGI("vertexIndices[0,1,2]=%d,%d,%d", vertexIndices[0], vertexIndices[1], vertexIndices[2]);
 }
 
 GLuint sphere_vao;

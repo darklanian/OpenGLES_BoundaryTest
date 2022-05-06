@@ -83,6 +83,7 @@ static int engine_init_display(struct engine* engine) {
             EGL_BLUE_SIZE, 8,
             EGL_GREEN_SIZE, 8,
             EGL_RED_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
             EGL_DEPTH_SIZE, 24,
             EGL_STENCIL_SIZE, 8,
             EGL_NONE
@@ -105,19 +106,32 @@ static int engine_init_display(struct engine* engine) {
     assert(supportedConfigs);
     eglChooseConfig(display, attribs, supportedConfigs.get(), numConfigs, &numConfigs);
     assert(numConfigs);
+    LOGI("numConfigs=%d", numConfigs);
     auto i = 0;
     for (; i < numConfigs; i++) {
         auto& cfg = supportedConfigs[i];
-        EGLint r, g, b, d, s;
-        if (eglGetConfigAttrib(display, cfg, EGL_RED_SIZE, &r)   &&
-            eglGetConfigAttrib(display, cfg, EGL_GREEN_SIZE, &g) &&
-            eglGetConfigAttrib(display, cfg, EGL_BLUE_SIZE, &b)  &&
-            eglGetConfigAttrib(display, cfg, EGL_DEPTH_SIZE, &d) &&
-                eglGetConfigAttrib(display, cfg, EGL_STENCIL_SIZE, &s) &&
-            r == 8 && g == 8 && b == 8 && d == 24 && s == 8) {
+        bool ok = true;
+        for (int j = 0; j < sizeof(attribs); ++j) {
+            EGLint v;
+            if (!eglGetConfigAttrib(display, cfg, attribs[j++], &v) || v != attribs[j]) {
+                ok = false;
+            }
+        }
+        if (ok) {
             config = supportedConfigs[i];
             break;
         }
+        /*EGLint r, g, b, a, d, s;
+        if (eglGetConfigAttrib(display, cfg, EGL_RED_SIZE, &r)   &&
+            eglGetConfigAttrib(display, cfg, EGL_GREEN_SIZE, &g) &&
+            eglGetConfigAttrib(display, cfg, EGL_BLUE_SIZE, &b)  &&
+            eglGetConfigAttrib(display, cfg, EGL_ALPHA_SIZE, &a)  &&
+            eglGetConfigAttrib(display, cfg, EGL_DEPTH_SIZE, &d) &&
+            eglGetConfigAttrib(display, cfg, EGL_STENCIL_SIZE, &s) &&
+            r == 8 && g == 8 && b == 8 && a == 8 && d == 24 && s == 8) {
+            config = supportedConfigs[i];
+            break;
+        }*/
     }
     if (i == numConfigs) {
         config = supportedConfigs[0];
@@ -215,7 +229,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             break;
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
-            if (engine->app->window != nullptr) {
+            if (app->window != nullptr) {
                 engine_init_display(engine);
                 render_init(getAssets(engine->app), engine->width, engine->height);
             }
@@ -228,7 +242,6 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             break;
         case APP_CMD_LOST_FOCUS:
             // Also stop animating.
-            engine_draw_frame(engine);
             break;
         default:
             break;
