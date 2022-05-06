@@ -9,6 +9,7 @@
 
 #include "wall.h"
 #include "cube.h"
+#include "sphere.h"
 
 GLuint program;
 GLuint matrixId;
@@ -36,30 +37,32 @@ void render_init(AAssetManager* am, int width, int height) {
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
     // Camera matrix
     viewMatrix       = glm::lookAt(
-            glm::vec3(2,5,-5), // Camera is at (x,y,z), in World Space
+            glm::vec3(0,3,10), // Camera is at (x,y,z), in World Space
             glm::vec3(0,0,0), // and looks at the origin
             glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
 
     wall_init();
     cube_init();
+    sphere_init(am);
 }
 
-static void set_color(float r, float g, float b, float a) {
+void set_color(float r, float g, float b, float a) {
     GLfloat color[] = {r, g, b, a};
     glUniform4fv(colorId, 1, color);
 }
 
-static void set_matrix(glm::mat4 matrix) {
+void set_matrix(glm::mat4 matrix) {
     // Our ModelViewProjection : multiplication of our 3 matrices
     glm::mat4 MVP        = projectionMatrix * viewMatrix * matrix; // Remember, matrix multiplication is the other way around
     glUniformMatrix4fv(matrixId, 1, GL_FALSE, &MVP[0][0]);
 }
 
-static void draw_walls() {
+void draw_walls() {
     set_color(1.0f, 0.0f, 0.0f, 1.0f);
+    glm::mat4 modelMatrix;
 
-    glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.0f, 0.0f, 0.0f));
     set_matrix(modelMatrix);
 
@@ -72,14 +75,24 @@ static void draw_walls() {
 
     wall_draw();
 
+    set_color(0.5f, 0.0f, 0.0f, 1.0f);
+
+
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.0f, -1.0f, 1.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    set_matrix(modelMatrix);
+
+    wall_draw();
+
     glBindVertexArray(0);
 }
 
-float cube_z = 0.0f;
+float move_z = 0.0f;
 
-static void draw_cube(float scale) {
+void draw_cube(float scale) {
     glm::mat4 modelMatrix = glm::mat4(1.0f);
-    glm::mat4 translateMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, cube_z));
+    glm::mat4 translateMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, move_z));
     glm::mat4 rotateMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 scaleMatrix = glm::scale(modelMatrix, glm::vec3(scale));
 
@@ -93,7 +106,23 @@ static void draw_cube(float scale) {
     glBindVertexArray(0);
 }
 
-void draw_intersection(float scale) {
+void draw_sphere(float scale) {
+    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    glm::mat4 translateMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, move_z));
+    glm::mat4 rotateMatrix = glm::mat4(1.0f);
+    glm::mat4 scaleMatrix = glm::scale(modelMatrix, glm::vec3(scale));
+
+    modelMatrix = translateMatrix * rotateMatrix * scaleMatrix;
+    set_matrix(modelMatrix);
+
+    sphere_enable();
+
+    sphere_draw();
+
+    glBindVertexArray(0);
+}
+
+void draw_intersection(float scale, bool cube) {
     glDisable(GL_CULL_FACE);
     glEnable(GL_STENCIL_TEST);
     glDepthFunc(GL_GEQUAL);
@@ -102,7 +131,10 @@ void draw_intersection(float scale) {
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-    draw_cube(scale);
+    if (cube)
+        draw_cube(scale);
+    else
+        draw_sphere(scale);
 
     //set_color(0.1f, 0.1f, 0.4f, 0.5f);
     glDepthFunc(GL_LEQUAL);
@@ -110,24 +142,27 @@ void draw_intersection(float scale) {
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-    draw_cube(scale);
+    if (cube)
+        draw_cube(scale);
+    else
+        draw_sphere(scale);
 
     glClear(GL_STENCIL_BUFFER_BIT);
     glDisable(GL_STENCIL_TEST);
     glDepthMask(GL_TRUE);
 }
 
-void draw_hole(float scale, float thickness) {
-    draw_intersection(scale);
+void draw_hole(float scale, float thickness, bool cube = false) {
+    draw_intersection(scale, cube);
 
     set_color(0.1f, 0.1f, 0.4f, 1.0f);
-    draw_intersection(scale-thickness);
+    draw_intersection(scale-thickness, cube);
 }
 
 void render_draw_frame(float move) {
-    cube_z = move;
+    move_z = move;
     // Initialize GL state.
-    //glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
@@ -144,15 +179,24 @@ void render_draw_frame(float move) {
 
     draw_walls();
 
-    set_color(1.0f, 1.0f, 1.0f, 1.0f);
-    draw_hole(0.3f, 0.07f);
+    bool cube = false;
 
+    set_color(1.0f, 1.0f, 1.0f, 1.0f);
+    draw_hole(0.3f, 0.05f, cube);
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     set_color(0.0f, 1.0f, 0.0f, 0.5f);
-    draw_cube(0.3f);
+    if (cube)
+        draw_cube(0.05f);
+    else
+        draw_sphere(0.05f);
 }
 
 void render_deinit() {
     glDeleteProgram(program);
     wall_deinit();
     cube_deinit();
+    sphere_deinit();
 }

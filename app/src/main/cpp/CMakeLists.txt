@@ -30,6 +30,7 @@ set(CMAKE_SHARED_LINKER_FLAGS
     "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
 add_library(native-activity SHARED main.cpp render.cpp shader.cpp
+        sphere.cpp
         cube.cpp
         wall.cpp)
 
