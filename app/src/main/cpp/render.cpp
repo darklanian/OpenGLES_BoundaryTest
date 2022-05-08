@@ -37,7 +37,7 @@ void render_init(AAssetManager* am, int width, int height) {
     projectionMatrix = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
     // Camera matrix
     viewMatrix       = glm::lookAt(
-            glm::vec3(0,3,10), // Camera is at (x,y,z), in World Space
+            glm::vec3(0,3,12), // Camera is at (x,y,z), in World Space
             glm::vec3(0,0,0), // and looks at the origin
             glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
     );
@@ -73,14 +73,50 @@ void draw_walls() {
     modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 0.0f, 0.0f));
     set_matrix(modelMatrix);
 
+    set_color(0.5f, 0.0f, 0.5f, 1.0f);
     wall_draw();
 
-    set_color(0.5f, 0.0f, 0.0f, 1.0f);
+    set_color(0.5f, 0.5f, 0.0f, 1.0f);
 
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    set_matrix(modelMatrix);
+
+    wall_draw();
+
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.0f, 1.0f, -1.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    set_matrix(modelMatrix);
+
+    wall_draw();
+
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 1.0f, -1.0f));
+    modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    set_matrix(modelMatrix);
+
+    wall_draw();
+
+    set_color(0.0f, 0.5f, 0.0f, 1.0f);
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.0f, 0.0f, 2.0f));
+    set_matrix(modelMatrix);
+
+    wall_draw();
+
+    modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 0.0f, 2.0f));
+    set_matrix(modelMatrix);
+
+    wall_draw();
+
+    set_color(1.0f, 1.0f, 0.0f, 1.0f);
     modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     modelMatrix = glm::translate(modelMatrix, glm::vec3(-1.0f, -1.0f, 1.0f));
     modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.2f, 1.2f, 1.2f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(3.0f, 3.0f, 3.0f));
     set_matrix(modelMatrix);
 
     wall_draw();
